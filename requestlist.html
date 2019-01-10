@@ -1,0 +1,104 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<!-- Curtis Knocking - Request Manager -->
+<!-- Manage Song Request List          -->
+<!-- Copyright 2018 Epsotic LLC        -->
+<title>Curtis Knocking - Request Manager></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+<link rel="stylesheet" href="jukebox.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script type="text/javascript">
+'use strict';
+var $jq = jQuery.noConflict();
+var apiUrl = "https://q7u5rdjlk6.execute-api.us-east-1.amazonaws.com/Prod";
+
+function populateSongList(data) {
+    document.getElementById('list_songs').innerHTML = "";
+    var msg ='';
+    var songlist = data.Items;
+    var requestsExist = false;
+    songlist.sort(function(a, b) {return b.Requests - a.Requests;});
+    songlist.forEach(function(song) {
+        if (song.Requests > 0) {
+            msg = "<li class=\"listitem\" data-icon=\"false\"><a href=>" + song.Title + " - " + song.Artist + "<span class=\"ui-li-count\">" + song.Requests + "</span></a></li>";
+            document.querySelector('#list_songs').innerHTML +=  msg; 
+            requestsExist=true;
+        }
+    });
+    if (requestsExist==false) {
+        document.querySelector('#list_songs').innerHTML = "<li class=\"listitem\">No Requests</li>";
+    }
+    $jq('#list_songs').listview('refresh');
+}
+
+function queryData() {
+    $jq.ajax({
+        method: 'GET',
+        url: apiUrl + '/GetSongs',
+        contentType: 'application/json',
+        jsonp: 'false',
+        success: populateSongList,
+        error: function ajaxError(jqXHR, textStatus, errorThrown) {
+            console.error('Error requesting songs: ', textStatus, ', Details: ', errorThrown);
+            console.error('Response: ', jqXHR.responseText);
+            alert('An error occured when getting songs:\n' + jqXHR.responseText);
+        }
+    });
+}
+
+function resetRequests() {
+    $jq.ajax({
+        method: 'GET',
+        url: apiUrl + '/ResetRequests',
+        contentType: 'application/json',
+        jsonp: 'false',
+        success: resetList,
+        error: function ajaxError(jqXHR, textStatus, errorThrown) {
+            console.error('Error requesting songs: ', textStatus, ', Details: ', errorThrown);
+            console.error('Response: ', jqXHR.responseText);
+            alert('An error occured when resetting request counts:\n' + jqXHR.responseText);
+        }
+    });
+}
+
+function resetList() {
+    $jq("#submitted").dialog("open");
+    $jq("#submitted").dialog("close");
+    queryData();
+}
+
+$jq(document).ready(function() {
+    $jq("#submitted").dialog({
+        modal: true,
+        autoOpen: false,
+        dialogClass: "no-close",
+        show: { effect: "fadeIn", duration: 1000 },
+        hide: { effect: "fadeOut", duration: 1000, delay: 1000 }
+    });
+    $jq(document).on("click", ".ui-btn-right", function () {
+        resetRequests();
+    });
+    queryData();
+});
+</script>
+</head>
+<body>
+<div id='main' data-role='page' data-theme='b'>
+	<div data-role='header' data-position='fixed'>
+		<h1>CK Requests</h1>
+		<a href="requestlist.html" data-icon="delete" class="ui-btn-right" data-theme="a">Reset Counts</a>
+	</div>
+	<div id='content' data-role='content' class='ui-content'>
+	  	<ul data-role="listview" data-count-theme="a" id="list_songs">
+    	</ul>
+	</div>
+    <div id="submitted" title="Clean Slate!">All request counts were reset</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+Resources:
+  JukeboxGetSongs:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: JukeboxGetSongs/index.handler
+      Runtime: nodejs6.10
+      Description: ''
+      MemorySize: 128
+      Timeout: 15
+      Events:
+        LambdaMicroservice:
+          Type: Api
+          Properties:
+            Path: /GetSongs
+            Method: ANY
+  JukeboxGetSongsPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - JukeboxGetSongs
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Sub': 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*'
+  JukeboxAddRequests:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: JukeboxAddRequests/index.handler
+      Runtime: nodejs6.10
+      Description: ''
+      MemorySize: 128
+      Timeout: 15
+      Events:
+        LambdaMicroservice:
+          Type: Api
+          Properties:
+            Path: /AddRequests
+            Method: ANY
+  JukeboxAddRequestsPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - JukeboxAddRequests
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Sub': 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*'
+  JukeboxResetRequests:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: JukeboxResetRequests/index.handler
+      Runtime: nodejs6.10
+      Description: ''
+      MemorySize: 128
+      Timeout: 15
+      Events:
+        LambdaMicroservice:
+          Type: Api
+          Properties:
+            Path: /ResetRequests
+            Method: ANY
+  JukeboxResetRequestsPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName:
+        'Fn::GetAtt':
+          - JukeboxResetRequests
+          - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        'Fn::Sub': 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/*/*'

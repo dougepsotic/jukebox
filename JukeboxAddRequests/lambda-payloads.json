@@ -1,0 +1,39 @@
+{
+    "JukeboxAddRequests": {
+        "lambda": {
+            "Items": [
+                {
+                    "Title": "Brown Sugar"
+                },
+                {
+                    "Title": "Creep"
+                }
+            ]
+        },
+        "apigateway": {
+            "path": "/AddRequests",
+            "method": {
+                "value": "POST",
+                "items": [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "DELETE",
+                    "HEAD",
+                    "OPTIONS",
+                    "PATCH"
+                ]
+            },
+            "body": {
+                "Items": [
+                    {
+                        "Title": "Brown Sugar"
+                    },
+                    {
+                        "Title": "Creep"
+                    }
+                ]
+            }
+        }
+    }
+}

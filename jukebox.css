@@ -1,0 +1,32 @@
+.centered {
+	text-align: center;
+}
+.goleft {
+	text-align: left;
+}
+.ui-header .ui-title {
+	text-align: left;
+	font-size: 14pt;
+	margin: 0 10px;
+}
+.ui-btn-right {
+	top : .6em;
+}
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}
+.ui-dialog .ui-dialog-content {
+    border: 0;
+    text-align: center;
+    background: #ffffff;
+}
+.ui-dialog .ui-dialog-title {
+    text-align: center;
+    padding: .8em;
+}
+.ui-widget-overlay {
+    background-color: black;
+    background-image: none;
+    opacity: 0.9;
+    z-index: 1001;    
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<!-- Curtis Knocking - Jukebox        -->
+<!-- Request a Song for the Next Show -->
+<!-- Copyright 2018 Epsotic LLC       -->
+<title>Curtis Knocking - Jukebox></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
+<link rel="stylesheet" href="jukebox.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script type="text/javascript">
+'use strict';
+var $jq = jQuery.noConflict();
+var apiUrl = "https://q7u5rdjlk6.execute-api.us-east-1.amazonaws.com/Prod";
+var requestList = { "Items": [] };
+var requestJSON;
+
+function populateSongList(data) {
+    document.getElementById('list_songs').innerHTML = "";
+    var msg ='';
+    data.Items.forEach(function(song) {
+        msg = "<li class=\"listitem\" data-icon=\"false\"><a href=>" + song.Title + " - " + song.Artist + "</a></li>";
+        document.querySelector('#list_songs').innerHTML +=  msg; 
+    });
+    $jq('#list_songs').listview('refresh');
+}
+
+function queryData() {
+    $jq.ajax({
+        method: 'GET',
+        url: apiUrl + '/GetSongs',
+        contentType: 'application/json',
+        jsonp: 'false',
+        success: populateSongList,
+        error: function ajaxError(jqXHR, textStatus, errorThrown) {
+            console.error('Error requesting songs: ', textStatus, ', Details: ', errorThrown);
+            console.error('Response: ', jqXHR.responseText);
+            alert('An error occured when requesting songs:\n' + jqXHR.responseText);
+        }
+    });
+}
+
+function resetList() {
+    $jq(".ui-btn-right").hide();
+    $jq("#submitted").dialog("open");
+    $jq("#submitted").dialog("close");
+    requestList = { "Items": [] };
+    queryData();
+}
+
+function submitRequests() {
+    $jq.ajax({
+        method: 'POST',
+        url: apiUrl + '/AddRequests',
+        contentType: 'application/json',
+        data: requestJSON,
+        jsonp: 'false',
+        success: resetList,
+        error: function ajaxError(jqXHR, textStatus, errorThrown) {
+            console.error('Error requesting songs: ', textStatus, ', Details: ', errorThrown);
+            console.error('Response: ', jqXHR.responseText);
+            alert('An error occured when submitting requests:\n' + jqXHR.responseText);
+        }
+    });
+}
+
+$jq(document).ready(function() {
+    $jq(".ui-btn-right").hide();
+    $jq(".ui-btn-right").toggleClass("ui-btn-active");
+    $jq(document).on("click", ".listitem", function () {
+        $jq("a", this).toggleClass("ui-btn-active");
+        $jq(".ui-btn-right").show();
+        var start = this.innerHTML.indexOf(">")+1;
+        var end = this.innerHTML.indexOf(" - ");
+        var clickedItem = {"Title": this.innerHTML.substring(start,end)};
+        if ($jq("a", this).hasClass("ui-btn-active")) {
+            requestList.Items.push(clickedItem);
+        } else {
+            requestList.Items = $jq.grep(requestList, function(value) {
+                return value != clickedItem;
+            });
+        }
+    });
+    $jq("#submitted").dialog({
+        modal: true,
+        autoOpen: false,
+        dialogClass: "no-close",
+        show: { effect: "fadeIn", duration: 1000 },
+        hide: { effect: "fadeOut", duration: 1000, delay: 1000 }
+    });
+    $jq(document).on("click", ".ui-btn-right", function () {
+        requestJSON = JSON.stringify(requestList);
+        submitRequests();
+    });
+    queryData();
+});
+</script>
+</head>
+<body>
+<div id='main' data-role='page' data-theme='b'>
+	<div data-role='header' data-position='fixed'>
+		<h1>CK Jukebox</h1>
+		<a href="index.html" data-icon="check" class="ui-btn-right" data-theme="a">Request Songs!</a>
+	</div>
+	<div id='content' data-role='content' class='ui-content'>
+	  	<ul data-role="listview" id="list_songs">
+    	</ul>
+	</div>
+    <div id="submitted" title="Rock On!">Your requests were submitted</div>
+</div>
+</body>
+</html>
